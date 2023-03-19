@@ -30,19 +30,22 @@ function setup(){
   Matter.use('matter-attractors');
   
   engine.gravity.y = 0;
-  boundary = new Boundary();
+  //boundary = new Boundary();
   mc =  new mConstraints(0.001);
 
-  tb = new TextBody(400, 400, '자');
-  //tb2 = new TextBody(800, 400, '자');
-  tb.connecting();
+  tb = new TextBody(canvasWidth/2 - 135, 540, '자');
+  tb2 = new TextBody(canvasWidth/2 + 135, 540, '석');
+  //tb.connecting();
+  //tb2.connecting();
 
-  sc = color(255, 90, 20);
-  nc = color(20, 90, 255);
+  sc = color(255, 60, 100);
+  nc = color(60, 100, 255);
 
-  //mag = new Magnet(canvasWidth/2-100, canvasHeight/2, '자');
-  //net = new Magnet(canvasWidth/2+100, canvasHeight/2, '석');
-  s = new Parts(100, 600, sc);
+  
+
+  s = new Parts(0,0, color(255));
+  
+  
   //n = new Parts(400, 400, nc);
   
 }
@@ -51,12 +54,25 @@ function draw(){
   background(255);
   //stroke(0);
   tb.display();
+  tb2.display();
+  textSize(305);
+  fill(sc);
+  text('자', canvasWidth/2 - 135, canvasHeight/2);
+  fill(nc);
+  text('석', canvasWidth/2 + 135, canvasHeight/2);
   //mag.display(0, color(255, 90, 40));
   //net.display(net.size/32, color(40, 90, 255));
   s.display();
+  
   //n.display();
 
   mc.display(1, color(255,0,0));
+}
+
+function keyPressed(){
+  if(keyCode == ENTER){
+    
+  }
 }
 
 class Magnet{
@@ -85,28 +101,28 @@ class Parts{
     this.p = [];
     this.c = c;
     
-    for(let i = 0; i < 1000; i++){
-      this.p.push(new Box(x+random(-x, x), y+random(-y, y), 10, 10));
+    //if(x < 0 && x > canvasWidth){
+    
+    for(let i = 0; i < 1200; i++){
+      let x = random(-300, canvasWidth + 300);
+      let y = random(-300, canvasHeight + 300);
+      let d = dist(x, y, canvasWidth/2, canvasHeight/2);
+      let s = random(7, 17);
+      let s2 = random(7, 17);
+      if ((d > 800)) {
+        this.p.push(new Box(x+random(-100, 100), y+random(-100, 100), s, s2));
+      }
+      else i--;
+    //}
     }
   }
 
   display(){
     fill(this.c);
+    stroke(160, 100);
+    strokeWeight(0.1);
     for(let i = 0; i < this.p.length; i++){
       this.p[i].display();
-    }
-    if(mouseIsPressed){
-      //this.forcing();
-    }
-  }
-
-  forcing(){
-    for(let i = 0; i < this.p.length; i++){
-      let pos1 = createVector(this.p[i].body.position.x, this.p[i].body.position.y)
-      let f = p5.Vector.sub(createVector(mouseX, mouseY), pos1);
-      f.normalize();
-      f.mult(0.0001);
-      Body.applyForce(this.p[i].body, 0, f);
     }
   }
 }
@@ -119,16 +135,20 @@ class TextBody{
     this.cg.textFont(font);
     this.cg.textSize(300);
     this.cg.text(t, x, y);
-    this.span = 12;
+    this.loc = createVector(x, y);
+    this.txt = t;
+    this.span = 8;
     this.b = [];
     let option = { isStatic : true,
       plugin: {
         attractors: [
           function(bodyA, bodyB) {
-            return {
-              x: (bodyA.position.x - bodyB.position.x) * 1e-6*0.002,
-              y: (bodyA.position.y - bodyB.position.y) * 1e-6*0.002,
+            var force = {
+              x: (bodyA.position.x - bodyB.position.x) * 1e-6*0.00007,
+              y: (bodyA.position.y - bodyB.position.y) * 1e-6*0.00007,
             };
+            Body.applyForce(bodyA, bodyA.position, Matter.Vector.neg(force));
+            Body.applyForce(bodyB, bodyB.position, force);
           }
         ]
       }
@@ -137,7 +157,7 @@ class TextBody{
       for(let y = 0; y < canvasHeight; y+=this.span){
         let c = this.cg.get(x, y);
         if(c[0] < 255){
-          this.b.push(new Box(x, y, 12, 12, option));
+          this.b.push(new Box(x, y, 8, 8, option));
         }
       }
     }
@@ -166,9 +186,9 @@ class TextBody{
   display(){
     fill(0);
     textSize(300);
-    //text('자', this.b[100].body.position.x+160, this.b[100].body.position.y-95);
+    //text(this.txt, this.b[100].body.position.x+18, this.b[100].body.position.y-95);
     for(let i = 0; i < this.b.length; i++){
-     this.b[i].display();
+      //this.b[i].display();
       this.b[i].body.angle = 0;
     }
   }
